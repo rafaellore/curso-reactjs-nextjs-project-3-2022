@@ -2,7 +2,6 @@ import { useEffect, useRef, useState } from 'react';
 
 import { mapData } from '../../api/map-data';
 
-import { GridTwoColumns } from '../../components/GridTwoColumns';
 import { GridContent } from '../../components/GridContent';
 import { GridText } from '../../components/GridText';
 import { GridImage } from '../../components/GridImage';
@@ -13,6 +12,7 @@ import { Loading } from '../Loading';
 import { useLocation } from 'react-router-dom';
 
 import config from '../../config';
+import { GridTwoColumns } from '../../components/GridTwoColumns';
 
 function Home() {
   const [data, setData] = useState([]);
@@ -21,12 +21,9 @@ function Home() {
 
   useEffect(() => {
     const load = async () => {
-      const pathName = location.pathname.replace(/[^a-z0-9-_]/gi, '');
-      const slug = pathName ? pathName : 'landing-page';
-
       try {
         const data = await fetch(
-          `https://strapi-v4-test.herokuapp.com/api/pages/?filters[slug]=${slug}&populate=deep`,
+          `http://localhost:1337/api/pages?populate=deep&pagination[pageSize]=1&sort[0]=id:desc`,
         );
         const json = await data.json();
         const { attributes } = json.data[0];
@@ -78,11 +75,22 @@ function Home() {
       logoData={{ text, link, srcImg }}
     >
       {sections.map((section, index) => {
-        const { component } = section;
+        console.log(section);
+
+        const { component, __component, image } = section;
         const key = `${slug}-${index}`;
 
-        if (component === 'section.section-two-columns') {
-          return <GridTwoColumns key={key} {...section} />;
+        if (
+          component === 'section.sections-two-columns' ||
+          __component === 'section.sections-two-columns'
+        ) {
+          return (
+            <GridTwoColumns
+              key={key}
+              {...section}
+              srcImg={image?.data?.attributes?.url}
+            />
+          );
         }
 
         if (component === 'section.section-content') {
